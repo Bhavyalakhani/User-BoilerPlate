@@ -21,15 +21,15 @@ exports.register = async(req,res, next) => {
 };
 
 
+
 // @desc      Login user
 // @route     POST /api/v1/auth/login
 // @access    Public
 exports.login = async(req, res, next) => {
-    console.log(req.body)
     const {email,password} = req.body;
     //Validate email and password 
     if (!email || !password){
-        return next(new ErrorResponse('Please provide an email and password',400));
+        return res.status(400).json({success:false,msg:'Please provide an email and password'})
     }
 
 
@@ -37,13 +37,16 @@ exports.login = async(req, res, next) => {
     const user = await User.findOne({email}).select('+password');
 
     if(!user){
-        return next(new ErrorResponse('Invalid Credentials',401));
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid Credentials',
+          })
     }
     
     
     const isMatch = await user.matchPassword(password);
     if (!isMatch){
-        return next(new ErrorResponse('Invalid Credentials',401));  
+        return res.status(400).json({success:false,message:"Incorrect Password"});  
     }
 
     sendTokenResponse(user,200,res)
